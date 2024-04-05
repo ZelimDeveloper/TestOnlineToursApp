@@ -25,6 +25,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -172,6 +173,31 @@ fun Title() {
         fontSize = 24.sp,
         textAlign = TextAlign.Center,
         letterSpacing = (-0.1).sp
+    )
+}
+
+@Composable
+fun ErrorAlert(dismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = { dismiss() },
+        confirmButton = {
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { dismiss() },
+                colors = ButtonDefaults.buttonColors(BottomSelectedColor))
+            {
+                Text(
+                    text = "OK",
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    lineHeight = 24.sp,
+                    textAlign = TextAlign.Center)
+            }
+        },
+        title = {  Text(text = "Пожалуйста заполните поля Откуда и Куда") },
+        shape = RoundedCornerShape(16.dp),
     )
 }
 
