@@ -4,4 +4,6 @@
     <string name="help">Помощь</string>
     <string name="favorite">Избранное</string>
     <string name="settings">Настройки</string>
+    <string name="search_card_placeholder">Город вылета</string>
+    <string name="search_card_placeholder2">Страна, курорт, отель</string>
 </resources>

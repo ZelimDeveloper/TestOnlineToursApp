@@ -1,5 +1,6 @@
 package com.example.testonlinetoursapp.screens
 
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,25 +11,109 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import com.example.testonlinetoursapp.R
+import com.example.testonlinetoursapp.components.ui.BottomSheetContent
+import com.example.testonlinetoursapp.components.ui.ConfirmButton
+import com.example.testonlinetoursapp.components.ui.FirstCard
+import com.example.testonlinetoursapp.components.ui.SecondCard
+import com.example.testonlinetoursapp.components.ui.Title
+import com.example.testonlinetoursapp.constants.BOTTOMSHEET_CONTENT_FROM
+import com.example.testonlinetoursapp.constants.BOTTOMSHEET_CONTENT_TO
+import com.example.testonlinetoursapp.constants.bottomSheetContentStatus
+import com.example.testonlinetoursapp.data.models.CityModel
+import com.example.testonlinetoursapp.data.models.CountryModel
+import com.example.testonlinetoursapp.data.retrofit.DataProvider
+import com.example.testonlinetoursapp.ui.theme.BlueColor
 import com.example.testonlinetoursapp.ui.theme.BottomSelectedColor
 import com.example.testonlinetoursapp.ui.theme.CardBackground
 import com.example.testonlinetoursapp.ui.theme.CardTextColor
+import com.example.testonlinetoursapp.ui.theme.graybsIconColor
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(onClickFrom: () -> Unit, onClickTo: () -> Unit, onClickConfirm: () -> Unit) {
+fun SearchScreen(onClickConfirm: () -> Unit, vm: SearchScreenVM = hiltViewModel()) {
+
+    var openBottomSheet by rememberSaveable { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var selectedCity by remember { mutableStateOf("") }
+    var selectedCountry by remember { mutableStateOf("") }
+
+    if (openBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { openBottomSheet = false },
+            sheetState = bottomSheetState)
+        {
+            BottomSheetContent(
+                onCloseClick = {
+                    scope.launch { bottomSheetState.hide() }.invokeOnCompletion {
+                        if (!bottomSheetState.isVisible) { openBottomSheet = false }
+                    }
+                },
+                onSelectCity = {
+                    selectedCity = it.name
+                    openBottomSheet = false
+                },
+                cities = vm.citiesList,
+                onSelectCountry = {
+                    selectedCountry = it.name
+                    openBottomSheet = false
+                },
+                countries = vm.countryList
+            )
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize())
     {
@@ -42,7 +127,17 @@ fun SearchScreen(onClickFrom: () -> Unit, onClickTo: () -> Unit, onClickConfirm:
                 .fillMaxSize()
                 .padding(top = 36.dp), verticalArrangement = Arrangement.SpaceBetween) {
                 Column {
-                    FirstCard(onClickFrom, onClickTo)
+                    FirstCard(
+                        titleFrom = selectedCity,
+                        titleTo = selectedCountry,
+                        onClickFrom = {
+                            bottomSheetContentStatus.value = BOTTOMSHEET_CONTENT_FROM
+                            openBottomSheet = true
+                            },
+                        onClickTo = {
+                            bottomSheetContentStatus.value = BOTTOMSHEET_CONTENT_TO
+                            openBottomSheet = true
+                        })
                     Spacer(Modifier.height(8.dp))
                     SecondCard()
                 }
@@ -55,126 +150,34 @@ fun SearchScreen(onClickFrom: () -> Unit, onClickTo: () -> Unit, onClickConfirm:
 }
 
 
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun FirstCard(onClickFrom: () -> Unit, onClickTo: () -> Unit) {
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onClickFrom,
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        backgroundColor = CardBackground
-    )
-    {
-        Text("Откуда", modifier = Modifier.padding(16.dp), color = CardTextColor)
+@HiltViewModel
+class SearchScreenVM @Inject constructor (private val dataProvider:DataProvider):ViewModel() {
+
+    val citiesList = mutableStateListOf<CityModel>()
+    val countryList = mutableStateListOf<CountryModel>()
+
+    init {
+        getCities()
+        getCountry()
     }
-    Spacer(modifier = Modifier
-        .fillMaxWidth()
-        .height(1.dp))
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onClickTo,
-        shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
-        backgroundColor = CardBackground
-    )
-    {
-        Text("Куда", modifier = Modifier.padding(16.dp), color = CardTextColor)
-    }
-}
-
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun SecondCard() {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(1.dp)) {
-        Card(
-            modifier = Modifier.weight(1f),
-            onClick = {  },
-            shape = RoundedCornerShape(topStart = 16.dp),
-            backgroundColor = CardBackground
+     fun getCities() {
+        dataProvider.getCities(
+            success = {
+                citiesList.clear()
+                citiesList.addAll(it) },
+            error = {},
+            exception = {}
         )
-        {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("ДАТЫ ВЫЛЕТА", modifier = Modifier, color = CardTextColor)
-                Text("17 сентября", modifier = Modifier)
-            }
-
-        }
-
-        Card(
-            modifier = Modifier.weight(1f),
-            onClick = {  },
-            shape = RoundedCornerShape(topEnd = 16.dp),
-            backgroundColor = CardBackground
+    }
+    fun getCountry() {
+        dataProvider.getCountries(
+            success = {
+                countryList.clear()
+                countryList.addAll(it)
+            },
+            error = {}
         )
-        {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("КОЛИЧЕСТВО", modifier = Modifier, color = CardTextColor)
-                Text("10 ночей", modifier = Modifier)
-            }
-        }
-    }
-
-
-    Spacer(modifier = Modifier
-        .fillMaxWidth()
-        .height(1.dp))
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = {  },
-        shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
-        backgroundColor = CardBackground
-    )
-    {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("КТО ЕДЕТ", modifier = Modifier, color = CardTextColor)
-            Text("2 взрослых", modifier = Modifier)
-        }
-
     }
 }
 
-@Composable
-fun Title() {
-    Text(
-        text = "Поиск туров",
-        modifier = Modifier,
-        color = Color.Black,
-        fontWeight = FontWeight.ExtraBold,
-        lineHeight = 24.sp,
-        fontSize = 24.sp,
-        textAlign = TextAlign.Center,
-        letterSpacing = (-0.1).sp
-    )
-}
-
-
-@Composable
-fun ConfirmButton(onClickConfirm:() -> Unit) {
-    Button(
-        onClick = onClickConfirm,
-        shape = RoundedCornerShape(18.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = BottomSelectedColor),
-        modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(vertical = 16.dp, horizontal = 10.dp)
-
-    ) {
-        Text(
-            text = "Найти тур",
-            modifier = Modifier.fillMaxWidth(),
-            color = Color.White,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.ExtraBold,
-            lineHeight = 24.sp,
-            textAlign = TextAlign.Center)
-    }
-}
-
-
-@Composable
-fun BottomSheetContent() {
-
-
-}

@@ -54,10 +54,11 @@ fun TestOnlineToursAppTheme(
         else -> LightColorScheme
     }
     val view = LocalView.current
+    val statusBarBackground = MaterialTheme.colorScheme.background
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
+            window.statusBarColor = statusBarBackground.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
         }
     }

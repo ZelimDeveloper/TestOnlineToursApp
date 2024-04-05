@@ -1,6 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    kotlin("kapt")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -39,6 +41,7 @@ android {
     buildFeatures {
         compose = true
     }
+
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
     }
@@ -56,10 +59,18 @@ dependencies {
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation ("com.squareup.okhttp3:logging-interceptor:4.9.0")
     implementation ("com.squareup.retrofit2:converter-scalars:2.9.0")
+    implementation ("com.github.skydoves:sandwich:1.2.1")
+
+    //hilt
+    implementation("com.google.dagger:hilt-android:2.49")
+    kapt("com.google.dagger:hilt-android-compiler:2.44")
 
     //navigation
-    implementation ("androidx.navigation:navigation-compose:2.7.0")
+    implementation ("androidx.navigation:navigation-compose:2.7.7")
     implementation ("androidx.hilt:hilt-navigation-compose:1.2.0")
+
+    //accompanist
+    implementation ("com.google.accompanist:accompanist-systemuicontroller:0.35.0-alpha")
 
     implementation("androidx.compose.material:material:1.6.5")
     implementation ("androidx.compose.material:material-icons-extended-android:1.6.5")
@@ -79,4 +90,8 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+}
+
+kapt {
+    correctErrorTypes = true
 }
