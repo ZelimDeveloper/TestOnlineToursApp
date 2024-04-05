@@ -3,6 +3,10 @@ package com.example.testonlinetoursapp.data.retrofit
 import com.example.testonlinetoursapp.constants.AUTH_TOKEN
 import com.example.testonlinetoursapp.data.models.CityModel
 import com.example.testonlinetoursapp.data.models.CountryModel
+import com.example.testonlinetoursapp.data.models.CreateSearchRequestModel
+import com.example.testonlinetoursapp.data.models.CreateSearchResponseModel
+import com.example.testonlinetoursapp.data.models.ResponseToursResultModel
+import com.example.testonlinetoursapp.data.models.SearchRequestModel
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -13,6 +17,15 @@ interface ApiService {
 
     @GET("countries")
     fun getCountries(): Call<List<CountryModel>>
+
+    @POST("searches")
+    fun createSearch(@Body body: CreateSearchRequestModel): Call<CreateSearchResponseModel>
+
+
+    @GET("searches/{key}/results")
+    fun getTours(@Path("key") searchKey: String): Call<ResponseToursResultModel>
+
+
 
 
 

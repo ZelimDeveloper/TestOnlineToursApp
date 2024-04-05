@@ -88,7 +88,7 @@ fun AppNavigation() {
                         SearchScreen(
                             onClickConfirm = { navController.navigate(Screen.SearchResult.route)})
                     },
-                    searchResultScreenContent = { SearchResultScreen() })
+                    searchResultScreenContent = { SearchResultScreen(onBackClick = { navController.navigateUp() }) })
 
                 composable(Screen.Help.route) { HelpScreen() }
                 composable(Screen.Favorite.route) { FavoriteScreen() }

@@ -1,5 +1,6 @@
 package com.example.testonlinetoursapp.constants
 
+import com.example.testonlinetoursapp.data.models.ToursResultModel
 import kotlinx.coroutines.flow.MutableStateFlow
 
 
@@ -13,3 +14,4 @@ const val BOTTOMSHEET_CONTENT_TO = 2
 
 
 val bottomSheetContentStatus = MutableStateFlow(BOTTOMSHEET_CONTENT_FROM)
+val globalToursList = MutableStateFlow<List<ToursResultModel>>(emptyList())

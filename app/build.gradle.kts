@@ -69,8 +69,9 @@ dependencies {
     implementation ("androidx.navigation:navigation-compose:2.7.7")
     implementation ("androidx.hilt:hilt-navigation-compose:1.2.0")
 
-    //accompanist
-    implementation ("com.google.accompanist:accompanist-systemuicontroller:0.35.0-alpha")
+    //glide
+    implementation ("com.github.skydoves:landscapist-glide:1.3.3")
+    kapt ("com.github.bumptech.glide:compiler:4.12.0")
 
     implementation("androidx.compose.material:material:1.6.5")
     implementation ("androidx.compose.material:material-icons-extended-android:1.6.5")

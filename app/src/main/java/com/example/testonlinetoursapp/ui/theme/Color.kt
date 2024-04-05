@@ -14,6 +14,7 @@ val BottomUnselectedColor = Color(0xFFB1B5C3)
 val CardBackground = Color(0xFFF4F5F6)
 val CardTextColor = Color(0xFF777E90)
 val BlueColor = Color(0xFF00A0FA)
+val greyColor = Color(0xFFF4F7F8)
 val graybsIconColor = Color(0xFFD4D4D4)
 
 

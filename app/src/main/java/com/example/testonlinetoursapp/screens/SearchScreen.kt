@@ -1,6 +1,7 @@
 package com.example.testonlinetoursapp.screens
 
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -67,8 +68,10 @@ import com.example.testonlinetoursapp.components.ui.Title
 import com.example.testonlinetoursapp.constants.BOTTOMSHEET_CONTENT_FROM
 import com.example.testonlinetoursapp.constants.BOTTOMSHEET_CONTENT_TO
 import com.example.testonlinetoursapp.constants.bottomSheetContentStatus
+import com.example.testonlinetoursapp.constants.globalToursList
 import com.example.testonlinetoursapp.data.models.CityModel
 import com.example.testonlinetoursapp.data.models.CountryModel
+import com.example.testonlinetoursapp.data.models.ToursResultModel
 import com.example.testonlinetoursapp.data.retrofit.DataProvider
 import com.example.testonlinetoursapp.ui.theme.BlueColor
 import com.example.testonlinetoursapp.ui.theme.BottomSelectedColor
@@ -87,8 +90,9 @@ fun SearchScreen(onClickConfirm: () -> Unit, vm: SearchScreenVM = hiltViewModel(
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var selectedCity by remember { mutableStateOf("") }
-    var selectedCountry by remember { mutableStateOf("") }
+    var selectedCity by remember { mutableStateOf(CityModel()) }
+    var selectedCountry by remember { mutableStateOf(CountryModel()) }
+    var buttonLoading by remember { mutableStateOf(false) }
 
     if (openBottomSheet) {
         ModalBottomSheet(
@@ -101,13 +105,13 @@ fun SearchScreen(onClickConfirm: () -> Unit, vm: SearchScreenVM = hiltViewModel(
                         if (!bottomSheetState.isVisible) { openBottomSheet = false }
                     }
                 },
-                onSelectCity = {
-                    selectedCity = it.name
+                onSelectCity = { city ->
+                    selectedCity = city
                     openBottomSheet = false
                 },
                 cities = vm.citiesList,
-                onSelectCountry = {
-                    selectedCountry = it.name
+                onSelectCountry = { country ->
+                    selectedCountry = country
                     openBottomSheet = false
                 },
                 countries = vm.countryList
@@ -128,8 +132,8 @@ fun SearchScreen(onClickConfirm: () -> Unit, vm: SearchScreenVM = hiltViewModel(
                 .padding(top = 36.dp), verticalArrangement = Arrangement.SpaceBetween) {
                 Column {
                     FirstCard(
-                        titleFrom = selectedCity,
-                        titleTo = selectedCountry,
+                        titleFrom = selectedCity.name,
+                        titleTo = selectedCountry.name,
                         onClickFrom = {
                             bottomSheetContentStatus.value = BOTTOMSHEET_CONTENT_FROM
                             openBottomSheet = true
@@ -142,8 +146,21 @@ fun SearchScreen(onClickConfirm: () -> Unit, vm: SearchScreenVM = hiltViewModel(
                     SecondCard()
                 }
 
-                ConfirmButton(onClickConfirm)
-
+                ConfirmButton(
+                    buttonLoading = buttonLoading,
+                    onClickConfirm = {
+                        buttonLoading = true
+                        vm.createSearch(
+                            selectedCityId = selectedCity.id,
+                            success = {
+                                onClickConfirm()
+                            },
+                            error = {
+                                buttonLoading = false
+                            }
+                        )
+                    }
+                )
             }
         }
     }
@@ -160,6 +177,27 @@ class SearchScreenVM @Inject constructor (private val dataProvider:DataProvider)
     init {
         getCities()
         getCountry()
+    }
+
+
+    fun getTour(searchKey:String, success: (List<ToursResultModel>) -> Unit) {
+        dataProvider.getTours(
+            searchKey = searchKey,
+            success = { success(it) })
+    }
+    fun createSearch(selectedCityId:Int, success: () -> Unit, error: () -> Unit) {
+        dataProvider.createSearch(
+            selectedCityId = selectedCityId,
+            success = { key ->
+                getTour(key) { list ->
+                    globalToursList.value = list
+                    success()
+                }
+            },
+            error = {
+                error()
+            }
+        )
     }
      fun getCities() {
         dataProvider.getCities(

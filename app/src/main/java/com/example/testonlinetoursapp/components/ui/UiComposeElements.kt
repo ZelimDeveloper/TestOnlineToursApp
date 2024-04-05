@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -26,6 +27,7 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -175,23 +177,28 @@ fun Title() {
 
 
 @Composable
-fun ConfirmButton(onClickConfirm:() -> Unit) {
+fun ConfirmButton(buttonLoading:Boolean, onClickConfirm:() -> Unit) {
     Button(
         onClick = onClickConfirm,
         shape = RoundedCornerShape(18.dp),
         colors = ButtonDefaults.buttonColors(containerColor = BottomSelectedColor),
         modifier = Modifier.fillMaxWidth(),
+        enabled = !buttonLoading,
         contentPadding = PaddingValues(vertical = 16.dp, horizontal = 10.dp)
 
     ) {
-        Text(
-            text = "Найти тур",
-            modifier = Modifier.fillMaxWidth(),
-            color = Color.White,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.ExtraBold,
-            lineHeight = 24.sp,
-            textAlign = TextAlign.Center)
+        if (buttonLoading) {
+            CircularProgressIndicator(color = BottomSelectedColor, modifier = Modifier.size(30.dp))
+        } else {
+            Text(
+                text = "Найти тур",
+                modifier = Modifier.fillMaxWidth(),
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.ExtraBold,
+                lineHeight = 24.sp,
+                textAlign = TextAlign.Center)
+        }
     }
 }
 
@@ -301,7 +308,9 @@ fun BottomSheetContentTo(onCloseClick: () -> Unit, countries: List<CountryModel>
             lineHeight = 24.sp,
             color = CardTextColor,
             textAlign = TextAlign.Start,
-            modifier = Modifier.fillMaxWidth().padding(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         )
 
         LazyColumn(
